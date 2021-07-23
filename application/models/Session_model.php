@@ -33,4 +33,15 @@ class Session_model extends CI_Model
         $query = $this->db->get_where($this->table, $where);
         return $query->row_array(); // return single result
     }
+
+    public function get_detail($session_id = null)
+    {
+        $this->db->select('s.name session_name,s.id session_id,description,start,duration,s.created as session_created,u.name user_name,u.ID as user_id, email');
+        $this->db->from('session s');
+        $this->db->join('user u', 'u.ID = s.userID', 'left');
+        $this->db->where('s.ID', $session_id);
+        $query = $this->db->get();
+        $result = $query->result_array();
+        return $result;
+    }
 }

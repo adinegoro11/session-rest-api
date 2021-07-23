@@ -27,8 +27,8 @@ if (! function_exists('validate_before_insert')) {
     }
 }
 
-if (! function_exists('validate_before_delete')) {
-    function validate_before_delete($params = [])
+if (! function_exists('validate_params')) {
+    function validate_params($params = [])
     {
         $ci=& get_instance();
         $data = [
@@ -37,6 +37,7 @@ if (! function_exists('validate_before_delete')) {
         $ci->form_validation->set_data($data);
         $ci->form_validation->set_rules('session_id', 'Session ID', 'required|integer');
         $result['success'] = true;
+        $result['session_id'] = $data['session_id'];
         if ($ci->form_validation->run() == false) {
             $result['success'] = false;
             $result['error_message'] = validation_errors();

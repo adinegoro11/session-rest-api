@@ -17,9 +17,56 @@ class Sessions extends REST_Controller
         date_default_timezone_set('Asia/Jakarta');
     }
 
+    private function get_sessions()
+    {
+    }
+
+    private function show_detail($session_id = 0)
+    {
+        $query = $this->session_model->get_detail($session_id);
+        $found = count($query) > 0;
+        
+        if (! $found) {
+            $output = [
+                'success' => false,
+                'message' => 'Session not found',
+                'data' => [],
+            ];
+            $this->set_output($output, 404);
+        } else {
+            $data = $query[0];
+            $output = [
+            'success' => true,
+            'data' => [
+                'id' => $data['session_id'],
+                'name' => $data['session_name'],
+                'description' => $data['description'],
+                'start' => $data['start'],
+                'duration' => $data['duration'],
+                'created' => $data['session_created'],
+                'user' => [
+                    'id' => $data['user_id'],
+                    'name' => $data['user_name'],
+                    'email' => $data['email'],
+                    ]
+                ],
+           ];
+            $this->set_output($output, 200);
+        }
+    }
+
     public function index_get()
     {
-        echo "delete";
+        $params = $this->get();
+        $session_id = $this->uri->segment(3, 0);
+        validate_params(['session_id'=> $session_id]);
+
+        if (isset($params['request']) && $session_id == 0) {
+            $this->get_sessions();
+        } else {
+            # detail
+            $this->show_detail($session_id);
+        }
     }
 
     public function index_post()

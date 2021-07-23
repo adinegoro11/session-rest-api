@@ -77,4 +77,12 @@ if (! function_exists('check_user')) {
         }
     }
 }
- 
+
+if (! function_exists('get_user')) {
+    function get_user($params = [])
+    {
+        $ci=& get_instance();
+        $query = $ci->user_model->get_by_condition($params);
+        return $query;
+    }
+}

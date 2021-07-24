@@ -1,70 +1,111 @@
-###################
-What is CodeIgniter
-###################
+#####################
+REST API Session Data
+#####################
 
-CodeIgniter is an Application Development Framework - a toolkit - for people
-who build web sites using PHP. Its goal is to enable you to develop projects
-much faster than you could if you were writing code from scratch, by providing
-a rich set of libraries for commonly needed tasks, as well as a simple
-interface and logical structure to access these libraries. CodeIgniter lets
-you creatively focus on your project by minimizing the amount of code needed
-for a given task.
+This API using to create, update, read, and delete session data
 
 *******************
-Release Information
+Register
 *******************
+**[POST]** http://localhost/doogether/api/users/register
 
-This repo contains in-development code for future releases. To download the
-latest stable release please visit the `CodeIgniter Downloads
-<https://codeigniter.com/download>`_ page.
+=======
+
+Body:
+
+- name
+- email
+- password
+- confirm_password
+
 
 **************************
-Changelog and New Features
+Login
 **************************
+**[POST]** http://localhost/doogether/api/users/login
 
-You can find a list of all changes for each release in the `user
-guide change log <https://github.com/bcit-ci/CodeIgniter/blob/develop/user_guide_src/source/changelog.rst>`_.
+=======
+
+Body:
+
+- email
+- password
+
+Return value JWT
 
 *******************
-Server Requirements
+Show List Session
 *******************
+**[GET]** http://localhost/doogether/api/sessions?request={"search":{"session_name":"coaching clinic","duration":"60"},"order_by":{"session_id":"desc"}}
 
-PHP version 5.6 or newer is recommended.
+=======
 
-It should work on 5.3.7 as well, but we strongly advise you NOT to run
-such old versions of PHP, because of potential security and performance
-issues, as well as missing features.
+**[HEADER]** Authentication JWT
 
-************
-Installation
-************
+=======
 
-Please see the `installation section <https://codeigniter.com/user_guide/installation/index.html>`_
-of the CodeIgniter User Guide.
+available search & order:
 
-*******
-License
-*******
+- user_id
+- session_id
+- session_name
+- name (user name)
+- description
+- email
+- duration
 
-Please see the `license
-agreement <https://github.com/bcit-ci/CodeIgniter/blob/develop/user_guide_src/source/license.rst>`_.
+*******************
+Create Session
+*******************
+**[POST]** http://localhost/doogether/api/sessions
 
-*********
-Resources
-*********
+=======
 
--  `User Guide <https://codeigniter.com/docs>`_
--  `Language File Translations <https://github.com/bcit-ci/codeigniter3-translations>`_
--  `Community Forums <http://forum.codeigniter.com/>`_
--  `Community Wiki <https://github.com/bcit-ci/CodeIgniter/wiki>`_
--  `Community Slack Channel <https://codeigniterchat.slack.com>`_
+**[HEADER]** Authentication JWT
 
-Report security issues to our `Security Panel <mailto:security@codeigniter.com>`_
-or via our `page on HackerOne <https://hackerone.com/codeigniter>`_, thank you.
+=======
+
+Body:
+
+- name
+- description
+- start
+- duration
 
 ***************
-Acknowledgement
+Detail Session
 ***************
+**[GET]** http://localhost/doogether/api/sessions/*(session_id)*
 
-The CodeIgniter team would like to thank EllisLab, all the
-contributors to the CodeIgniter project and you, the CodeIgniter user.
+=======
+
+**[HEADER]** Authentication JWT
+
+
+***************
+Update Session
+***************
+**[PUT]** http://localhost/doogether/api/sessions/*(session_id)*
+
+=======
+
+**[HEADER]** Authentication JWT
+
+=======
+
+Body:
+
+- name
+- description
+- start
+- duration
+
+***************
+Delete Session
+***************
+**[DELETE]** http://localhost/doogether/api/sessions/*(session_id)*
+
+=======
+
+**[HEADER]** Authentication JWT
+

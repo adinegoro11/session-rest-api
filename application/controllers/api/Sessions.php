@@ -19,6 +19,7 @@ class Sessions extends REST_Controller
 
     public function index_get()
     {
+        $this->check_token();
         $params = $this->get();
         $session_id = $this->uri->segment(3, 0);
         validate_params(['session_id'=> $session_id]);
@@ -68,15 +69,13 @@ class Sessions extends REST_Controller
         }
     }
 
-    public function index_put()
+    public function index_put($session_id = 0)
     {
         $headers = $this->check_token();
-        $session_id = $this->uri->segment(3, 0);
-        $params = $this->post();
         validate_params(['session_id'=> $session_id]);
-
-        $data = $this->validate_before_insert($params);
-
+        $stream = $this->input->raw_input_stream;
+        $stream = json_decode($stream,true);
+        $params = $this->validate_before_insert($stream);
         $query = $this->get_session($session_id);
         if ($headers['data']['user_id'] != $query['userID']) {
             $output = [
@@ -86,11 +85,12 @@ class Sessions extends REST_Controller
             ];
             $this->set_output($output, 403);
         } else {
-            $this->session_model->update($session_id, $query);
+            $this->session_model->update($session_id, $params['data']);
+            $query = $this->get_session($session_id);
             $output = [
                 'success' => true,
                 'message' => 'Data successfully update',
-                'data' => [],
+                'data' => $query,
             ];
             $this->set_output($output, 200);
         }
@@ -149,7 +149,7 @@ class Sessions extends REST_Controller
             ];
             $this->set_output($output, 403);
         }
-        return;
+        return $validation;
     }
 
     private function save($data = [])

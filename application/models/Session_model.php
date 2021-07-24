@@ -22,9 +22,11 @@ class Session_model extends CI_Model
         $this->db->delete($this->table, array('id' => $id));
     }
 
-    public function update($id, $data)
+    public function update($id = 0, $data = [])
     {
-        $this->db->update($this->table, $data, array('id'=>$id));
+        $data['updated'] = date('Y-m-d H:i:s');
+        $this->db->where('id', $id);
+        $this->db->update($this->table, $data);
         return $id;
     }
 

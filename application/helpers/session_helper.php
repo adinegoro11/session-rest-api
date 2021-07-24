@@ -19,6 +19,7 @@ if (! function_exists('validate_before_insert')) {
         $ci->form_validation->set_rules('duration', 'duration', 'required|integer');
 
         $result['success'] = true;
+        $result['data'] = $data;
         if ($ci->form_validation->run() == false) {
             $result['success'] = false;
             $result['error_message'] = validation_errors();
@@ -42,6 +43,43 @@ if (! function_exists('validate_params')) {
             $result['success'] = false;
             $result['error_message'] = validation_errors();
         }
+        return $result;
+    }
+}
+
+if (! function_exists('mapping_columns')) {
+    function mapping_columns($params = [])
+    {
+        $mapping = [
+            // db column => params column
+            'duration' => 'duration',
+            'u.name' => 'name',
+            'user.id '=> 'user_id',
+            'email' => 'email',
+            's.id'=>'session_id',
+            's.name' => 'session_name',
+            'description'=>'description',
+        ];
+
+        $where = [];
+        foreach ($params['search'] as $key => $value) {
+            $db_column = array_search($key, $mapping);
+            if ($db_column) {
+                $where[$db_column] = $value;
+            }
+        }
+
+        $order_by = [];
+        $sort = ['asc','desc'];
+        foreach ($params['order_by'] as $key => $value) {
+            $db_column = array_search($key, $mapping);
+            $valid_sort = in_array($value, $sort);
+            if ($db_column && $valid_sort) {
+                $order_by[$db_column] = $value;
+            }
+        }
+
+        $result = ['where' => $where, 'order_by' => $order_by];
         return $result;
     }
 }

@@ -17,44 +17,6 @@ class Sessions extends REST_Controller
         date_default_timezone_set('Asia/Jakarta');
     }
 
-    private function get_sessions()
-    {
-    }
-
-    private function show_detail($session_id = 0)
-    {
-        $query = $this->session_model->get_detail($session_id);
-        $found = count($query) > 0;
-        
-        if (! $found) {
-            $output = [
-                'success' => false,
-                'message' => 'Session not found',
-                'data' => [],
-            ];
-            $this->set_output($output, 404);
-        } else {
-            $data = $query[0];
-            $output = [
-            'success' => true,
-            'data' => [
-                'id' => $data['session_id'],
-                'name' => $data['session_name'],
-                'description' => $data['description'],
-                'start' => $data['start'],
-                'duration' => $data['duration'],
-                'created' => $data['session_created'],
-                'user' => [
-                    'id' => $data['user_id'],
-                    'name' => $data['user_name'],
-                    'email' => $data['email'],
-                    ]
-                ],
-           ];
-            $this->set_output($output, 200);
-        }
-    }
-
     public function index_get()
     {
         $params = $this->get();
@@ -62,9 +24,8 @@ class Sessions extends REST_Controller
         validate_params(['session_id'=> $session_id]);
 
         if (isset($params['request']) && $session_id == 0) {
-            $this->get_sessions();
+            $this->list_sessions($params);
         } else {
-            # detail
             $this->show_detail($session_id);
         }
     }
@@ -83,6 +44,56 @@ class Sessions extends REST_Controller
             'data' => $query,
         ];
         $this->set_output($output, 201);
+    }
+
+    public function index_delete($session_id = 0)
+    {
+        $headers = $this->check_token();
+        $query = $this->get_session($session_id);
+        if ($headers['data']['user_id'] != $query['userID']) {
+            $output = [
+                'success' => false,
+                'message' => 'You not allowed to delete this data',
+                'data' => [],
+            ];
+            $this->set_output($output, 403);
+        } else {
+            $this->session_model->delete($session_id);
+            $output = [
+                'success' => true,
+                'message' => 'Data successfully removed',
+                'data' => [],
+            ];
+            $this->set_output($output, 200);
+        }
+    }
+
+    public function index_put()
+    {
+        $headers = $this->check_token();
+        $session_id = $this->uri->segment(3, 0);
+        $params = $this->post();
+        validate_params(['session_id'=> $session_id]);
+
+        $data = $this->validate_before_insert($params);
+
+        $query = $this->get_session($session_id);
+        if ($headers['data']['user_id'] != $query['userID']) {
+            $output = [
+                'success' => false,
+                'message' => 'You not allowed to update this data',
+                'data' => [],
+            ];
+            $this->set_output($output, 403);
+        } else {
+            $this->session_model->update($session_id, $query);
+            $output = [
+                'success' => true,
+                'message' => 'Data successfully update',
+                'data' => [],
+            ];
+            $this->set_output($output, 200);
+        }
     }
 
     private function check_token()
@@ -167,24 +178,36 @@ class Sessions extends REST_Controller
         exit;
     }
 
-    public function index_delete($session_id = 0)
+    private function show_detail($session_id = 0)
     {
-        $headers = $this->check_token();
-        $query = $this->get_session($session_id);
-        if ($headers['data']['user_id'] != $query['userID']) {
+        $query = $this->session_model->get_detail($session_id);
+        $found = count($query) > 0;
+
+        if (! $found) {
             $output = [
                 'success' => false,
-                'message' => 'You not allowed to delete this data',
+                'message' => 'Session not found',
                 'data' => [],
             ];
-            $this->set_output($output, 403);
+            $this->set_output($output, 404);
         } else {
-            $this->session_model->delete($session_id);
+            $data = $query[0];
             $output = [
-                'success' => true,
-                'message' => 'Data successfully removed',
-                'data' => [],
-            ];
+            'success' => true,
+            'data' => [
+                'id' => $data['session_id'],
+                'name' => $data['session_name'],
+                'description' => $data['description'],
+                'start' => $data['start'],
+                'duration' => $data['duration'],
+                'created' => $data['session_created'],
+                'user' => [
+                    'id' => $data['user_id'],
+                    'name' => $data['user_name'],
+                    'email' => $data['email'],
+                    ]
+                ],
+           ];
             $this->set_output($output, 200);
         }
     }
@@ -201,5 +224,34 @@ class Sessions extends REST_Controller
             $this->set_output($output, 404);
         }
         return $query;
+    }
+
+    private function list_sessions($params)
+    {
+        $params = json_decode($params['request'], true);
+        $params = mapping_columns($params);
+        $query = $this->session_model->get_list($params['where'], $params['order_by']);
+        if (count($query) == 0) {
+            $output = [
+                'success' => false,
+                'message' => 'Session not found',
+                'data' => [],
+            ];
+            $this->set_output($output, 404);
+        } else {
+            foreach ($query as $key => $value) {
+                $query[$key]['user']['id'] = $value['user_id'];
+                $query[$key]['user']['name'] = $value['user_name'];
+                $query[$key]['user']['email'] = $value['email'];
+                unset($query[$key]['email'],$query[$key]['user_name'],$query[$key]['user_id']);
+            }
+
+            $output = [
+                'success' => true,
+                'message' => 'List Sessions',
+                'data' => $query,
+            ];
+            $this->set_output($output, 200);
+        }
     }
 }

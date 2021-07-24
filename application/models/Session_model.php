@@ -44,4 +44,23 @@ class Session_model extends CI_Model
         $result = $query->result_array();
         return $result;
     }
+
+    public function get_list($where = [], $order_by = [])
+    {
+
+        $this->db->select('s.id session_id,s.name session_name,description,start,duration,s.created as session_created,u.name user_name,u.ID as user_id, email');
+        $this->db->from('session s');
+        $this->db->join('user u', 'u.ID = s.userID', 'left');
+
+        foreach ($where as $key => $value) {
+            $this->db->where($key, $value);
+        }
+        foreach ($order_by as $key => $value) {
+            $this->db->order_by($key, $value);
+        }
+
+        $query = $this->db->get();
+        $result = $query->result_array();
+        return $result;
+    }
 }
